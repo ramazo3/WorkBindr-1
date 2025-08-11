@@ -14,12 +14,13 @@ export function setupGoogleAuth() {
 
   console.log(`Setting up Google OAuth with callback URL: ${callbackURL}`);
 
-  passport.use(new GoogleStrategy({
+  passport.use("google", new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    callbackURL: callbackURL
+    callbackURL: callbackURL,
+    passReqToCallback: false
   },
-  async (accessToken: string, refreshToken: string, profile: Profile, done: any) => {
+  async (accessToken: string, refreshToken: string, profile: Profile, done: (error: any, user?: any) => void) => {
     try {
       // Create or update user from Google profile
       const user = await storage.upsertUser({
