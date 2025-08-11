@@ -136,6 +136,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Project Management endpoints
+  app.get("/api/projects", async (req, res) => {
+    try {
+      const projects = await storage.getProjects();
+      res.json(projects);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get projects" });
+    }
+  });
+
+  app.get("/api/projects/:id/tasks", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const tasks = await storage.getTasksByProject(id);
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get project tasks" });
+    }
+  });
+
+  app.patch("/api/tasks/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const task = await storage.updateTask(id, updates);
+      
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update task" });
+    }
+  });
+
+  // Donor Management endpoints
+  app.get("/api/donors", async (req, res) => {
+    try {
+      const donors = await storage.getDonors();
+      res.json(donors);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get donors" });
+    }
+  });
+
+  // Governance endpoints
+  app.get("/api/governance/proposals", async (req, res) => {
+    try {
+      const proposals = await storage.getGovernanceProposals();
+      res.json(proposals);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get governance proposals" });
+    }
+  });
+
+  app.post("/api/governance/proposals/:id/vote", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { vote, userId } = req.body;
+      
+      // Get user to use their reputation score as voting weight
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const proposal = await storage.voteOnProposal(id, vote, user.reputationScore || 0);
+      if (!proposal) {
+        return res.status(404).json({ message: "Proposal not found" });
+      }
+      
+      res.json(proposal);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to vote on proposal" });
+    }
+  });
+
+  // Developer settings endpoints
+  app.get("/api/developer/settings/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const settings = await storage.getDeveloperSettings(userId);
+      res.json(settings || { preferredLLM: "gpt-4o", apiKeys: null });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get developer settings" });
+    }
+  });
+
+  app.put("/api/developer/settings/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const settings = req.body;
+      const updatedSettings = await storage.updateDeveloperSettings(userId, settings);
+      res.json(updatedSettings);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update developer settings" });
+    }
+  });
+
   // Mock marketplace apps endpoint
   app.get("/api/marketplace", async (req, res) => {
     try {

@@ -4,6 +4,9 @@ import MicroAppCard from "../components/micro-app-card";
 import AIAssistantModal from "../components/ai-assistant-modal";
 import MarketplaceModal from "../components/marketplace-modal";
 import DeveloperModal from "../components/developer-modal";
+import ProjectManagementModal from "../components/project-management-modal";
+import DonorManagementModal from "../components/donor-management-modal";
+import GovernanceModal from "../components/governance-modal";
 import RecentTransactions from "../components/recent-transactions";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -14,6 +17,9 @@ export default function Dashboard() {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isMarketplaceModalOpen, setIsMarketplaceModalOpen] = useState(false);
   const [isDeveloperModalOpen, setIsDeveloperModalOpen] = useState(false);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [isDonorModalOpen, setIsDonorModalOpen] = useState(false);
+  const [isGovernanceModalOpen, setIsGovernanceModalOpen] = useState(false);
 
   const { data: currentUser } = useQuery<User>({
     queryKey: ["/api/user/current"],
@@ -29,6 +35,7 @@ export default function Dashboard() {
         onOpenAI={() => setIsAIModalOpen(true)}
         onOpenMarketplace={() => setIsMarketplaceModalOpen(true)}
         onOpenDeveloper={() => setIsDeveloperModalOpen(true)}
+        onOpenGovernance={() => setIsGovernanceModalOpen(true)}
         currentUser={currentUser}
       />
       
@@ -85,9 +92,25 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {microApps.map((app) => (
-                    <MicroAppCard key={app.id} microApp={app} />
-                  ))}
+                  {microApps.map((app) => {
+                    const handleAppClick = () => {
+                      if (app.name === "Task Flow") {
+                        setIsProjectModalOpen(true);
+                      } else if (app.name === "AI Assistant") {
+                        setIsAIModalOpen(true);
+                      } else if (app.name === "Donor Manager") {
+                        setIsDonorModalOpen(true);
+                      }
+                    };
+                    
+                    return (
+                      <MicroAppCard 
+                        key={app.id} 
+                        microApp={app} 
+                        onClick={handleAppClick}
+                      />
+                    );
+                  })}
                 </div>
               </div>
 
@@ -110,7 +133,24 @@ export default function Dashboard() {
       
       <DeveloperModal 
         isOpen={isDeveloperModalOpen} 
-        onClose={() => setIsDeveloperModalOpen(false)} 
+        onClose={() => setIsDeveloperModalOpen(false)}
+        currentUser={currentUser}
+      />
+      
+      <ProjectManagementModal 
+        isOpen={isProjectModalOpen} 
+        onClose={() => setIsProjectModalOpen(false)} 
+      />
+      
+      <DonorManagementModal 
+        isOpen={isDonorModalOpen} 
+        onClose={() => setIsDonorModalOpen(false)} 
+      />
+      
+      <GovernanceModal 
+        isOpen={isGovernanceModalOpen} 
+        onClose={() => setIsGovernanceModalOpen(false)}
+        currentUser={currentUser} 
       />
     </div>
   );

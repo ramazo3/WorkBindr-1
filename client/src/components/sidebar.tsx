@@ -32,7 +32,7 @@ export default function Sidebar({ currentUser }: SidebarProps) {
           </div>
           <p className="text-sm text-slate-600 mt-4">Based on contributions across the platform</p>
           <Button variant="ghost" className="mt-3 text-blue-600 hover:text-purple-700">
-            View Details
+            <i className="fas fa-external-link-alt mr-2"></i>View Details
           </Button>
         </div>
       </div>
@@ -81,7 +81,7 @@ export default function Sidebar({ currentUser }: SidebarProps) {
           variant="outline" 
           className="mt-4 w-full"
         >
-          Manage Session
+          <i className="fas fa-cog mr-2"></i>Manage Session
         </Button>
       </div>
     </div>

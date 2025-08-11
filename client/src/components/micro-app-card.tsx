@@ -4,9 +4,10 @@ import { Badge } from "@/components/ui/badge";
 
 interface MicroAppCardProps {
   microApp: MicroApp;
+  onClick?: () => void;
 }
 
-export default function MicroAppCard({ microApp }: MicroAppCardProps) {
+export default function MicroAppCard({ microApp, onClick }: MicroAppCardProps) {
   const getIconColorClass = (color: string) => {
     return color.replace('from-workbindr-', 'from-').replace('to-workbindr-', 'to-');
   };
@@ -16,7 +17,10 @@ export default function MicroAppCard({ microApp }: MicroAppCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+    <div 
+      className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
           <div className={`w-10 h-10 bg-gradient-to-br ${getIconColorClass(microApp.color)} rounded-lg flex items-center justify-center`}>
