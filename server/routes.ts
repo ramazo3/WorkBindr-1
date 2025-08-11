@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupGoogleAuth } from "./googleAuth";
+import passport from "passport";
 import { insertAiMessageSchema, insertTransactionSchema } from "@shared/schema";
 import OpenAI from "openai";
 
@@ -12,12 +14,36 @@ const openai = new OpenAI({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   await setupAuth(app);
+  setupGoogleAuth();
+
+  // Google OAuth routes
+  app.get('/api/auth/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+  );
+
+  app.get('/api/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/' }),
+    (req, res) => {
+      // Successful authentication, redirect to dashboard
+      res.redirect('/');
+    }
+  );
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      let user = null;
+      
+      // Check for Replit Auth
+      if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
+        const userId = req.user.claims.sub;
+        user = await storage.getUser(userId);
+      }
+      // Check for Google Auth
+      else if (req.isAuthenticated && req.isAuthenticated() && req.user?.id) {
+        user = req.user;
+      }
+      
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -28,19 +54,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Current user endpoint (for backward compatibility)
   app.get("/api/user/current", async (req: any, res) => {
     try {
+      let user = null;
+      
+      // Check for Replit Auth
       if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
         const userId = req.user.claims.sub;
-        const user = await storage.getUser(userId);
-        if (user) {
-          res.json({
-            id: user.id,
-            name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
-            email: user.email,
-            walletAddress: user.walletAddress || "Not Connected",
-            reputationScore: user.reputationScore || 0
-          });
-          return;
-        }
+        user = await storage.getUser(userId);
+      }
+      // Check for Google Auth
+      else if (req.isAuthenticated && req.isAuthenticated() && req.user?.id) {
+        user = req.user;
+      }
+      
+      if (user) {
+        res.json({
+          id: user.id,
+          name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || "User",
+          email: user.email,
+          walletAddress: user.walletAddress || "Not Connected",
+          reputationScore: user.reputationScore || 0
+        });
+        return;
       }
       
       // Fallback for development/demo

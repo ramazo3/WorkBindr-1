@@ -55,7 +55,13 @@ export default function Header({ onOpenAI, onOpenMarketplace, onOpenDeveloper, o
             {/* User Profile */}
             <div className="flex items-center space-x-3">
               <div className="text-right">
-                <p className="text-sm font-medium text-slate-900">{currentUser?.name || "Loading..."}</p>
+                <p className="text-sm font-medium text-slate-900">{
+                  currentUser ? (
+                    `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || 
+                    currentUser.email || 
+                    "User"
+                  ) : "Loading..."
+                }</p>
                 <p className="text-xs text-slate-500">{currentUser?.walletAddress || "0x..."}</p>
               </div>
               <img 

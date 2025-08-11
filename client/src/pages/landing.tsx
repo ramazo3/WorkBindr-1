@@ -15,12 +15,20 @@ export default function Landing() {
             </div>
             <span className="text-xl font-bold">WorkBindr 2.0</span>
           </div>
-          <Button 
-            onClick={() => window.location.href = '/api/login'}
-            className="bg-primary hover:bg-primary/90"
-          >
-            Sign In
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button 
+              onClick={() => window.location.href = '/api/login'}
+              variant="outline"
+            >
+              Sign in with Replit
+            </Button>
+            <Button 
+              onClick={() => window.location.href = '/api/auth/google'}
+              className="bg-primary hover:bg-primary/90"
+            >
+              Sign in with Google
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -36,16 +44,20 @@ export default function Landing() {
           WorkBindr 2.0 unifies all your business tools into one decentralized platform. 
           Build, discover, and monetize micro-applications while maintaining complete data ownership.
         </p>
-        <div className="flex gap-4 justify-center">
+        <div className="flex gap-4 justify-center flex-wrap">
           <Button 
             size="lg" 
-            onClick={() => window.location.href = '/api/login'}
+            onClick={() => window.location.href = '/api/auth/google'}
             className="bg-primary hover:bg-primary/90"
           >
-            Get Started Free <ArrowRight className="ml-2 w-4 h-4" />
+            Get Started with Google <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
-          <Button variant="outline" size="lg">
-            Watch Demo
+          <Button 
+            variant="outline" 
+            size="lg"
+            onClick={() => window.location.href = '/api/login'}
+          >
+            Sign in with Replit
           </Button>
         </div>
       </section>
@@ -184,13 +196,23 @@ export default function Landing() {
             <p className="text-xl mb-8 opacity-90">
               Join thousands of businesses already using WorkBindr 2.0 to streamline their operations.
             </p>
-            <Button 
-              size="lg" 
-              variant="secondary"
-              onClick={() => window.location.href = '/api/login'}
-            >
-              Start Your Free Trial <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
+            <div className="flex gap-4 justify-center flex-wrap">
+              <Button 
+                size="lg" 
+                variant="secondary"
+                onClick={() => window.location.href = '/api/auth/google'}
+              >
+                Start with Google <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={() => window.location.href = '/api/login'}
+                className="bg-white text-primary border-white hover:bg-gray-100"
+              >
+                Sign in with Replit
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </section>
