@@ -19,9 +19,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Google OAuth routes
   app.get('/api/auth/google', (req, res, next) => {
     console.log('Initiating Google OAuth...');
+    console.log('Client ID:', process.env.GOOGLE_CLIENT_ID ? 'Present' : 'Missing');
     console.log('Request host:', req.get('host'));
-    console.log('Request protocol:', req.protocol);
-    passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+    passport.authenticate('google', { 
+      scope: ['profile', 'email'],
+      accessType: 'offline',
+      prompt: 'consent'
+    })(req, res, next);
   });
 
   app.get('/api/auth/google/callback', 

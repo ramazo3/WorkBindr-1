@@ -17,6 +17,7 @@ export function setupGoogleAuth() {
     clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     callbackURL: callbackURL,
+    scope: ['profile', 'email'],
     passReqToCallback: false
   },
   async (accessToken: string, refreshToken: string, profile: Profile, done: (error: any, user?: any) => void) => {
