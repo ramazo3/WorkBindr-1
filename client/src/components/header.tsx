@@ -64,6 +64,14 @@ export default function Header({ onOpenAI, onOpenMarketplace, onOpenDeveloper, o
                 className="w-10 h-10 rounded-full border-2 border-slate-200" 
               />
             </div>
+            
+            {/* Logout Button */}
+            <button 
+              onClick={() => window.location.href = '/api/logout'}
+              className="px-3 py-1 text-sm text-slate-600 hover:text-slate-900 border border-slate-300 rounded-md hover:bg-slate-50"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>

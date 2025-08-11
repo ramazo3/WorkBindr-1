@@ -1,11 +1,12 @@
-import { type User, type InsertUser, type MicroApp, type InsertMicroApp, type Transaction, type InsertTransaction, type AiMessage, type InsertAiMessage, type PlatformStats, type Project, type InsertProject, type Task, type InsertTask, type Donor, type InsertDonor, type GovernanceProposal, type InsertGovernanceProposal, type DeveloperSettings, type InsertDeveloperSettings } from "@shared/schema";
+import { type User, type InsertUser, type UpsertUser, type MicroApp, type InsertMicroApp, type Transaction, type InsertTransaction, type AiMessage, type InsertAiMessage, type PlatformStats, type Project, type InsertProject, type Task, type InsertTask, type Donor, type InsertDonor, type GovernanceProposal, type InsertGovernanceProposal, type DeveloperSettings, type InsertDeveloperSettings } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
   // User methods
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  upsertUser(user: UpsertUser): Promise<User>;
   updateUserReputation(id: string, score: number): Promise<User | undefined>;
 
   // Micro-app methods
@@ -93,14 +94,17 @@ export class MemStorage implements IStorage {
   }
 
   private async initializeDefaultData() {
-    // Create default user
+    // Create default user (for development only)
     const defaultUser: User = {
       id: randomUUID(),
-      name: "Alex Chen",
-      username: "alex.chen",
+      email: "alex.chen@workbindr.com",
+      firstName: "Alex",
+      lastName: "Chen",
+      profileImageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=100&h=100",
       walletAddress: "0x1a2b...c3d4",
       reputationScore: 87.5,
       createdAt: new Date(),
+      updatedAt: new Date(),
     };
     this.users.set(defaultUser.id, defaultUser);
 
@@ -409,8 +413,8 @@ export class MemStorage implements IStorage {
     return this.users.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email === email);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -419,10 +423,38 @@ export class MemStorage implements IStorage {
       ...insertUser, 
       id, 
       createdAt: new Date(),
+      updatedAt: new Date(),
       reputationScore: insertUser.reputationScore ?? 0
     };
     this.users.set(id, user);
     return user;
+  }
+
+  async upsertUser(upsertUser: UpsertUser): Promise<User> {
+    const existing = upsertUser.id ? await this.getUser(upsertUser.id) : 
+                     upsertUser.email ? await this.getUserByEmail(upsertUser.email) : 
+                     undefined;
+
+    if (existing) {
+      const updated: User = {
+        ...existing,
+        ...upsertUser,
+        updatedAt: new Date(),
+      };
+      this.users.set(existing.id, updated);
+      return updated;
+    } else {
+      const id = upsertUser.id || randomUUID();
+      const newUser: User = {
+        ...upsertUser,
+        id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        reputationScore: upsertUser.reputationScore ?? 75.0,
+      };
+      this.users.set(id, newUser);
+      return newUser;
+    }
   }
 
   async updateUserReputation(id: string, score: number): Promise<User | undefined> {

@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertAiMessageSchema, insertTransactionSchema } from "@shared/schema";
 import OpenAI from "openai";
 
@@ -9,20 +10,51 @@ const openai = new OpenAI({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
-  // Get current user (mock - in real app would be from auth)
-  app.get("/api/user/current", async (req, res) => {
+  // Setup authentication
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUserByUsername("alex.chen") || 
-                   await storage.createUser({
-                     name: "Alex Chen",
-                     username: "alex.chen",
-                     walletAddress: "0x1a2b...c3d4",
-                     reputationScore: 87.5
-                   });
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
-      res.status(500).json({ message: "Failed to get current user" });
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Current user endpoint (for backward compatibility)
+  app.get("/api/user/current", async (req: any, res) => {
+    try {
+      if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
+        const userId = req.user.claims.sub;
+        const user = await storage.getUser(userId);
+        if (user) {
+          res.json({
+            id: user.id,
+            name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+            email: user.email,
+            walletAddress: user.walletAddress || "Not Connected",
+            reputationScore: user.reputationScore || 0
+          });
+          return;
+        }
+      }
+      
+      // Fallback for development/demo
+      const defaultUser = {
+        id: "demo-user",
+        name: "Alex Chen",
+        email: "alex.chen@workbindr.com", 
+        walletAddress: "0x1a2b...c3d4",
+        reputationScore: 87.5
+      };
+      
+      res.json(defaultUser);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get user" });
     }
   });
 
