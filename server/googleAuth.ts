@@ -28,7 +28,7 @@ export function setupGoogleAuth() {
       
       return done(null, user);
     } catch (error) {
-      return done(error, null);
+      return done(error, undefined);
     }
   }));
 }
