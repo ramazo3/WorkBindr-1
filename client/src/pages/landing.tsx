@@ -10,9 +10,11 @@ export default function Landing() {
       <header className="border-b bg-background/80 backdrop-blur">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Zap className="w-5 h-5 text-primary-foreground" />
-            </div>
+            <img 
+              src="/attached_assets/workbindr-icon_1754882945003.png" 
+              alt="WorkBindr Logo" 
+              className="w-8 h-8 rounded-lg"
+            />
             <span className="text-xl font-bold">WorkBindr 2.0</span>
           </div>
           <div className="flex items-center gap-3">

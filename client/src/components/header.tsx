@@ -18,9 +18,11 @@ export default function Header({ onOpenAI, onOpenMarketplace, onOpenDeveloper, o
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-700 rounded-lg flex items-center justify-center">
-                <i className="fas fa-cube text-white text-sm"></i>
-              </div>
+              <img 
+                src="/attached_assets/workbindr-icon_1754882945003.png" 
+                alt="WorkBindr Logo" 
+                className="w-8 h-8 rounded-lg"
+              />
               <h1 className="text-xl font-bold text-slate-900">WorkBindr 2.0</h1>
               <span className="px-2 py-1 text-xs bg-cyan-100 text-cyan-700 rounded-full border border-cyan-200">MVP</span>
             </div>
