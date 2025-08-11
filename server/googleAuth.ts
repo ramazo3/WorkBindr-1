@@ -12,6 +12,8 @@ export function setupGoogleAuth() {
     ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co/api/auth/google/callback`
     : `https://workspace.ramazorani.repl.co/api/auth/google/callback`;
 
+  console.log(`Setting up Google OAuth with callback URL: ${callbackURL}`);
+
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,

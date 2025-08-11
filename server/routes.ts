@@ -17,14 +17,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupGoogleAuth();
 
   // Google OAuth routes
-  app.get('/api/auth/google',
-    passport.authenticate('google', { scope: ['profile', 'email'] })
-  );
+  app.get('/api/auth/google', (req, res, next) => {
+    console.log('Initiating Google OAuth...');
+    passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+  });
 
   app.get('/api/auth/google/callback', 
-    passport.authenticate('google', { failureRedirect: '/' }),
+    (req, res, next) => {
+      console.log('Google OAuth callback received:', req.query);
+      if (req.query.error) {
+        console.error('Google OAuth error:', req.query.error, req.query.error_description);
+        return res.redirect('/?error=google_auth_failed');
+      }
+      next();
+    },
+    passport.authenticate('google', { 
+      failureRedirect: '/?error=google_auth_failed'
+    }),
     (req, res) => {
-      // Successful authentication, redirect to dashboard
+      console.log('Google OAuth success, user:', req.user);
       res.redirect('/');
     }
   );
