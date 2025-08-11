@@ -8,10 +8,14 @@ export function setupGoogleAuth() {
     return;
   }
 
+  const callbackURL = process.env.NODE_ENV === 'production' 
+    ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co/api/auth/google/callback`
+    : `https://workspace.ramazorani.repl.co/api/auth/google/callback`;
+
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    callbackURL: "/api/auth/google/callback"
+    callbackURL: callbackURL
   },
   async (accessToken: string, refreshToken: string, profile: Profile, done: any) => {
     try {
