@@ -1,0 +1,50 @@
+# Node modules
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Development files
+.git/
+.gitignore
+.env
+.env.*
+*.md
+README.md
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Test files
+test/
+tests/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+coverage/
+
+# Build artifacts (will be created during build)
+dist/
+client/dist/
+
+# Documentation
+docs/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Replit specific
+.replit
+replit.nix
+.config/
+
+# Logs
+logs/
+*.log
