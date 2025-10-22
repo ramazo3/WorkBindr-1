@@ -30,7 +30,6 @@ RUN npm ci --only=production
 COPY --from=builder /app/dist ./dist
 
 # Copy static assets and other necessary files
-COPY --from=builder /app/client/dist ./client/dist
 COPY --from=builder /app/attached_assets ./attached_assets
 
 # Create a non-root user for security
