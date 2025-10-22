@@ -1,15 +1,16 @@
-# Node modules
+# Node modules (will be installed during build)
 node_modules/
 npm-debug.log
 yarn-error.log
+package-lock.json
 
 # Development files
 .git/
 .gitignore
 .env
 .env.*
-*.md
-README.md
+.env.local
+.env.development
 
 # IDE and OS files
 .vscode/
@@ -28,11 +29,13 @@ tests/
 *.spec.ts
 coverage/
 
-# Build artifacts (will be created during build)
+# Build artifacts (will be created during Docker build)
 dist/
 client/dist/
 
 # Documentation
+*.md
+!README.md
 docs/
 
 # CI/CD
@@ -40,11 +43,21 @@ docs/
 .gitlab-ci.yml
 .travis.yml
 
-# Replit specific
+# Replit specific (not needed for Cloud Run)
 .replit
 replit.nix
 .config/
+replit.md
 
 # Logs
 logs/
 *.log
+
+# Database migration files (use drizzle-kit from your local machine, not in container)
+drizzle/
+migrations/
+
+# Temporary files
+.tmp/
+tmp/
+temp/

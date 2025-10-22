@@ -1,5 +1,6 @@
 import { type User, type InsertUser, type UpsertUser, type MicroApp, type InsertMicroApp, type Transaction, type InsertTransaction, type AiMessage, type InsertAiMessage, type PlatformStats, type Project, type InsertProject, type Task, type InsertTask, type Donor, type InsertDonor, type GovernanceProposal, type InsertGovernanceProposal, type DeveloperSettings, type InsertDeveloperSettings } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { dbStorage } from "./dbStorage";
 
 export interface IStorage {
   // User methods
@@ -682,4 +683,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Use database storage in production, memory storage in development
+export const storage = process.env.NODE_ENV === "production" ? dbStorage : new MemStorage();
