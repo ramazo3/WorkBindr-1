@@ -30,14 +30,28 @@ export function getSession() {
     ttl: sessionTtl,
     tableName: "sessions",
   });
+
+  // Ensure a valid session secret is always provided
+  let sessionSecret = process.env.SESSION_SECRET;
+  const isProd = process.env.NODE_ENV === "production";
+  if (!sessionSecret) {
+    if (isProd) {
+      throw new Error("SESSION_SECRET is required in production. Please set it in the environment.");
+    } else {
+      // Generate an ephemeral secret for development to avoid express-session deprecation warnings
+      sessionSecret = `dev-secret-${Math.random().toString(36).slice(2)}-${Date.now()}`;
+      console.warn("SESSION_SECRET not set. Using a temporary development secret. Do NOT use this in production.");
+    }
+  }
+
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: sessionSecret,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: isProd,
       maxAge: sessionTtl,
     },
   });

@@ -28,9 +28,9 @@ RUN apt-get update && apt-get install -y \
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
-# RUN npm ci --omit=dev
-RUN npm ci --only=production
+# Install dependencies including devDependencies to satisfy bundled dev-only imports during runtime
+# Note: Alternatively, adjust build to fully exclude dev-only modules from the server bundle.
+RUN npm ci
 
 # Copy built artifacts from builder stage
 COPY --from=builder /app/dist ./dist
