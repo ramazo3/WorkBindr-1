@@ -20,11 +20,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/google', (req, res, next) => {
     console.log('Initiating Google OAuth...');
     console.log('Client ID:', process.env.GOOGLE_CLIENT_ID ? 'Present' : 'Missing');
-    console.log('Request host:', req.get('host'));
+    const host = req.get('host');
+    const proto = (req.get('x-forwarded-proto') || req.protocol || 'https') as string;
+    const callbackURL = `${proto}://${host}/api/auth/google/callback`;
+    console.log('Request host:', host);
+    console.log('Computed Google callbackURL:', callbackURL);
     passport.authenticate('google', { 
       scope: ['profile', 'email'],
       accessType: 'offline',
-      prompt: 'consent'
+      prompt: 'consent',
+      callbackURL,
     })(req, res, next);
   });
 
@@ -41,10 +46,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       next();
     },
-    passport.authenticate('google', { 
-      failureRedirect: '/?error=google_auth_failed',
-      successRedirect: '/'
-    })
+    (req, res, next) => {
+      const host = req.get('host');
+      const proto = (req.get('x-forwarded-proto') || req.protocol || 'https') as string;
+      const callbackURL = `${proto}://${host}/api/auth/google/callback`;
+      console.log('Authenticating Google callback with URL:', callbackURL);
+      passport.authenticate('google', { 
+        failureRedirect: '/?error=google_auth_failed',
+        successRedirect: '/',
+        callbackURL,
+      })(req, res, next);
+    }
   );
 
   // Auth routes

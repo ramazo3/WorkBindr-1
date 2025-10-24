@@ -1,4 +1,4 @@
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { db } from "./db";
 import * as schema from "@shared/schema";
 import type {
@@ -87,7 +87,7 @@ export class DbStorage implements IStorage {
   async incrementTransactionCount(id: string): Promise<void> {
     await db
       .update(schema.microApps)
-      .set({ transactionCount: db.$count(schema.microApps.transactionCount) })
+      .set({ transactionCount: sql`${schema.microApps.transactionCount} + 1` })
       .where(eq(schema.microApps.id, id));
   }
 

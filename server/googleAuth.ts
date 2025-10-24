@@ -10,19 +10,18 @@ export function setupGoogleAuth() {
 
   console.log("Setting up Google OAuth strategy...");
 
-  // Use custom domain if available, otherwise fall back to Replit domain
-  const customDomain = process.env.CUSTOM_DOMAIN || 'itinerecloud.com';
-  const domain = process.env.NODE_ENV === 'production' && customDomain 
-    ? customDomain 
-    : process.env.REPLIT_DOMAINS;
-  const callbackURL = `https://${domain}/api/auth/google/callback`;
-  console.log(`Google OAuth callback URL: ${callbackURL}`);
-  console.log(`Using domain: ${domain} (Custom domain: ${customDomain})`);
+  // Prefer an explicit callback URL from the environment. Fallback to a relative path
+  // so that the host/protocol from the incoming request are used.
+  const envCallback = process.env.GOOGLE_CALLBACK_URL?.trim();
+  const callbackURL = envCallback && /^https?:\/\//i.test(envCallback)
+    ? envCallback
+    : "/api/auth/google/callback";
+  console.log(`Google OAuth callback URL configured as: ${callbackURL}`);
 
   passport.use("google", new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    callbackURL: callbackURL,
+    callbackURL,
     scope: ['profile', 'email'],
     passReqToCallback: false
   },

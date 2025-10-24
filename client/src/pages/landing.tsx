@@ -19,12 +19,6 @@ export default function Landing() {
           </div>
           <div className="flex items-center gap-3">
             <Button 
-              onClick={() => window.location.href = '/api/login'}
-              variant="outline"
-            >
-              Sign in with Replit
-            </Button>
-            <Button 
               onClick={() => window.location.href = '/api/auth/google'}
               className="bg-primary hover:bg-primary/90"
             >
@@ -53,13 +47,6 @@ export default function Landing() {
             className="bg-primary hover:bg-primary/90"
           >
             Get Started with Google <ArrowRight className="ml-2 w-4 h-4" />
-          </Button>
-          <Button 
-            variant="outline" 
-            size="lg"
-            onClick={() => window.location.href = '/api/login'}
-          >
-            Sign in with Replit
           </Button>
         </div>
       </section>
@@ -205,14 +192,6 @@ export default function Landing() {
                 onClick={() => window.location.href = '/api/auth/google'}
               >
                 Start with Google <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                onClick={() => window.location.href = '/api/login'}
-                className="bg-white text-primary border-white hover:bg-gray-100"
-              >
-                Sign in with Replit
               </Button>
             </div>
           </CardContent>
