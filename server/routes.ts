@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupSessionAndPassport } from "./sessionAuth";
 import { setupGoogleAuth } from "./googleAuth";
 import passport from "passport";
 import { insertAiMessageSchema, insertTransactionSchema } from "@shared/schema";
@@ -12,8 +12,7 @@ const openai = new OpenAI({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup authentication
-  await setupAuth(app);
+  // Google-only auth setup (Passport strategies)
   setupGoogleAuth();
 
   // Google OAuth routes
@@ -51,9 +50,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const proto = (req.get('x-forwarded-proto') || req.protocol || 'https') as string;
       const callbackURL = `${proto}://${host}/api/auth/google/callback`;
       console.log('Authenticating Google callback with URL:', callbackURL);
+      const frontendUrl = process.env.FRONTEND_URL || '';
+      const postLoginPath = process.env.POST_LOGIN_PATH || '/dashboard';
+      const successRedirect = `${frontendUrl}${postLoginPath}` || '/dashboard';
       passport.authenticate('google', { 
-        failureRedirect: '/?error=google_auth_failed',
-        successRedirect: '/',
+        failureRedirect: `${frontendUrl}/?error=google_auth_failed`,
+        successRedirect,
         callbackURL,
       })(req, res, next);
     }
@@ -62,61 +64,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', async (req: any, res) => {
     try {
-      let user = null;
-      
-      // Check for Replit Auth
-      if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
-        const userId = req.user.claims.sub;
-        user = await storage.getUser(userId);
+      if (req.isAuthenticated && req.isAuthenticated() && req.user?.id) {
+        return res.json(req.user);
       }
-      // Check for Google Auth
-      else if (req.isAuthenticated && req.isAuthenticated() && req.user?.id) {
-        user = req.user;
-      }
-      
-      res.json(user);
+      return res.json(null);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
+  // Logout endpoints
+    app.post('/api/auth/logout', (req: any, res, next) => {
+        req.logout((err) => {
+            if (err) {
+                console.error("Error during req.logout:", err);
+                // We can still try to destroy the session even if logout had an error
+            }
+
+            if (req.session) {
+                req.session.destroy((destroyErr) => {
+                    if (destroyErr) {
+                        console.error("Error destroying session:", destroyErr);
+                    }
+                    // In either case, clear cookie and send response
+                    res.clearCookie('connect.sid');
+                    res.status(204).end();
+                });
+            } else {
+                // No session to destroy
+                res.clearCookie('connect.sid');
+                res.status(204).end();
+            }
+        });
+    });
+
+    app.get('/api/logout', (req: any, res, next) => {
+        req.logout((err) => {
+            if (err) {
+                console.error("Error during req.logout:", err);
+            }
+
+            if (req.session) {
+                req.session.destroy((destroyErr) => {
+                    if (destroyErr) {
+                        console.error("Error destroying session:", destroyErr);
+                    }
+                    // In either case, clear cookie and redirect
+                    res.clearCookie('connect.sid');
+                    res.redirect('/');
+                });
+            } else {
+                // No session to destroy
+                res.clearCookie('connect.sid');
+                res.redirect('/');
+            }
+        });
+    });
+
   // Current user endpoint (for backward compatibility)
   app.get("/api/user/current", async (req: any, res) => {
     try {
-      let user = null;
-      
-      // Check for Replit Auth
-      if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
-        const userId = req.user.claims.sub;
-        user = await storage.getUser(userId);
-      }
-      // Check for Google Auth
-      else if (req.isAuthenticated && req.isAuthenticated() && req.user?.id) {
-        user = req.user;
-      }
-      
-      if (user) {
-        res.json({
+      if (req.isAuthenticated && req.isAuthenticated() && req.user?.id) {
+        const user = req.user;
+        return res.json({
           id: user.id,
           name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || "User",
           email: user.email,
           walletAddress: user.walletAddress || "Not Connected",
           reputationScore: user.reputationScore || 0
         });
-        return;
       }
-      
-      // Fallback for development/demo
-      const defaultUser = {
-        id: "demo-user",
-        name: "Alex Chen",
-        email: "alex.chen@workbindr.com", 
-        walletAddress: "0x1a2b...c3d4",
-        reputationScore: 87.5
-      };
-      
-      res.json(defaultUser);
+
+      // dev/demo fallback (optional)
+      if (process.env.NODE_ENV !== 'production') {
+        return res.json({
+          id: "demo-user",
+          name: "Alex Chen",
+          email: "alex.chen@workbindr.com",
+          walletAddress: "0x1a2b...c3d4",
+          reputationScore: 87.5
+        });
+      }
+
+      return res.status(401).json({ message: "Unauthorized" });
     } catch (error) {
       res.status(500).json({ message: "Failed to get user" });
     }

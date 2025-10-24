@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express, {type Request, Response, NextFunction} from "express";
 import {registerRoutes} from "./routes";
+import { setupSessionAndPassport } from "./sessionAuth";
 import {serveStatic, log} from "./static";
 
 const app = express();
@@ -38,6 +39,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+    // Ensure sessions are initialized before any routes
+    setupSessionAndPassport(app);
+
     const server = await registerRoutes(app);
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

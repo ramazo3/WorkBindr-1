@@ -75,7 +75,15 @@ export default function Header({ onOpenAI, onOpenMarketplace, onOpenDeveloper, o
             
             {/* Logout Button */}
             <button 
-              onClick={() => window.location.href = '/api/logout'}
+              onClick={async () => {
+                try {
+                  await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+                } catch (e) {
+                  // ignore
+                } finally {
+                  window.location.href = '/';
+                }
+              }}
               className="px-3 py-1 text-sm text-slate-600 hover:text-slate-900 border border-slate-300 rounded-md hover:bg-slate-50"
             >
               Logout
